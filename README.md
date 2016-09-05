@@ -28,4 +28,4 @@ npm install -g http-server
 http-server
 ```
 
-4. Run localhost on port number mentioned after running the above command
+- Run localhost on port number mentioned after running the above command
