@@ -1,0 +1,54 @@
+<div class="row">
+    <div class="col-md-4 col-md-offset-4">
+    	<div class="row">
+		    <div class="col-md-4 col-md-offset-4 text-center">
+		    	<h3>Settings</h3>
+		    </div>
+    	</div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form role="form">
+                    <fieldset>
+                        <div class="form-group">
+                            <h4>Account Settings</h4>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="{{'Change ' + email}}" name="email" type="email" autofocus="true" ng-model="email">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Change Password" name="password" type="password" ng-model="password">
+                        </div>
+
+                        <div class="form-group">
+                            <h4>Business Settings</h4>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Change Business Name" name="business_name" type="text" autofocus="">
+                        </div>
+
+
+                        <div class="form-group">
+                            <h4>Reporting Settings</h4>
+                        </div>
+                        <div class="form-group input-group">
+                            <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="financial_year_end" is-open="popup1.opened" ng-required="true" close-text="Close" placeholder="Change Financial Year End" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="open1()"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                      </div>
+                        <div class="form-group input-group">
+                            <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="opening_balance_date" is-open="popup2.opened" ng-required="true" close-text="Close" placeholder="Change Opening Balance Date" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="open2()"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                      </div>
+
+                        <div class="form-group">
+	                        <button class="btn btn-lg btn-primary btn-block">Submit</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

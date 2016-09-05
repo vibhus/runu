@@ -1,0 +1,28 @@
+<h2 class="page_header text-center">Please tick services you require and we will respond in 3 working days.</h2>
+<h3 class="page_header text-center">Currently only available for Singapore businesses on RuuNuu.</h3>
+<form ng-submit="vm.onSubmit()">
+    <div class="row">
+        <div class="col-md-4">
+            <strong>Regulatory & Reporting</strong>
+            <formly-form model="vm.formData" fields="vm.formFields.services.reporting"></formly-form>
+        </div>
+        <div class="col-md-4">
+            <strong>Value Added Services</strong>
+            <formly-form model="vm.formData" fields="vm.formFields.services.vas"></formly-form>
+        </div>
+        <div class="col-md-4">
+            <strong>Specialised Services</strong>
+            <formly-form model="vm.formData" fields="vm.formFields.services.specialised"></formly-form>
+        </div>
+    </div>
+    <div class="row">
+        <formly-form model="vm.formData" fields="vm.formFields.details">
+            <div class="form-group text-center">
+                ---CAPTCHA---
+            </div>
+            <div class="form-group">
+                <button class="btn btn-lg btn-primary btn-block">Submit</button>
+            </div>
+        </formly-form>
+    </div>
+</form>
