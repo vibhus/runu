@@ -31,21 +31,68 @@ app.config(['$routeProvider',
         templateUrl: 'views/forms/sales.html',
         controller: 'SalesCtrl'
       }).
-      when('/purchase', {
-        templateUrl: 'views/forms/purchase.html',
-        controller: 'PurchaseCtrl'
+      when('/production', {
+        templateUrl: 'views/forms/production.html',
+        controller: 'ProductionCtrl'
+      }).
+      when('/purchase-goods', {
+        templateUrl: 'views/forms/purchase-goods.html',
+        controller: 'PurchaseGoodsCtrl'
+      }).
+      when('/purchase-assets', {
+        templateUrl: 'views/forms/purchase-assets.html',
+        controller: 'PurchaseAssetsCtrl'
+      }).
+      when('/purchase-expenses', {
+        templateUrl: 'views/forms/purchase-expenses.html',
+        controller: 'PurchaseExpensesCtrl'
       }).
       when('/stock-take', {
         templateUrl: 'views/forms/stock-take.html',
         controller: 'StockTakeCtrl'
       }).
+        when('/collection-before', {
+            templateUrl: 'views/forms/collection-before.html',
+            controller: 'CollectionBeforeCtrl'
+        }).
+        when('/collection-after', {
+            templateUrl: 'views/forms/collection-after.html',
+            controller: 'CollectionAfterCtrl'
+        }).
+        when('/payment-before', {
+            templateUrl: 'views/forms/payment-before.html',
+            controller: 'PaymentBeforeCtrl'
+        }).
+        when('/payment-after', {
+            templateUrl: 'views/forms/payment-after.html',
+            controller: 'PaymentAfterCtrl'
+        }).
+        when('/employee-hiring', {
+            templateUrl: 'views/forms/employee-hiring.html',
+            controller: 'EmployeeHiringCtrl'
+        }).
+        when('/employee-firing', {
+            templateUrl: 'views/forms/employee-firing.html',
+            controller: 'EmployeeFiringCtrl'
+        }).
+        when('/employee-change-salary', {
+            templateUrl: 'views/forms/employee-change-salary.html',
+            controller: 'EmployeeChangeSalaryCtrl'
+        }).
+        when('/journals', {
+            templateUrl: 'views/forms/journal.html',
+            controller: 'JournalCtrl'
+        }).
       otherwise({
         redirectTo: '/login'
       });
 }]);
 
 app.constant('CONSTANTS', {
-  AUTH_HOME_PAGE: '/settings'
+  AUTH_HOME_PAGE: '/settings',
+    PATH: {
+        BASIC_FORM: "views/forms/form.html"
+    }
 });
 
 app.run(function(formlyConfig) {
@@ -90,8 +137,6 @@ app.run(function(formlyConfig) {
         ngModelAttrs[camelize(binding)] = {bound: binding};
     });
 
-    console.log(ngModelAttrs);
-
     formlyConfig.setType({
         name: 'datepicker',
         templateUrl:  'datepicker.html',
@@ -135,12 +180,63 @@ app.run(function(formlyConfig) {
             return chr ? chr.toLowerCase() : '';
         });
     }
+
+    var unique = 1;
+    formlyConfig.setType({
+        name: 'repeatSection',
+        templateUrl: 'repeatSection.html',
+        controller: function($scope) {
+            $scope.formOptions = {formState: $scope.formState};
+            $scope.addNew = addNew;
+
+            $scope.copyFields = copyFields;
+
+
+            function copyFields(fields) {
+                fields = angular.copy(fields);
+                addRandomIds(fields);
+                return fields;
+            }
+
+            function addNew() {
+                $scope.model[$scope.options.key] = $scope.model[$scope.options.key] || [];
+                var repeatsection = $scope.model[$scope.options.key];
+                var lastSection = repeatsection[repeatsection.length - 1];
+                var newsection = {};
+                if (lastSection) {
+                    newsection = angular.copy(lastSection);
+                }
+                repeatsection.push(newsection);
+            }
+
+            function addRandomIds(fields) {
+                unique++;
+                angular.forEach(fields, function(field, index) {
+                    if (field.fieldGroup) {
+                        addRandomIds(field.fieldGroup);
+                        return; // fieldGroups don't need an ID
+                    }
+
+                    if (field.templateOptions && field.templateOptions.fields) {
+                        addRandomIds(field.templateOptions.fields);
+                    }
+
+                    field.id = field.id || (field.key + '_' + index + '_' + unique + getRandomInt(0, 9999));
+                });
+            }
+
+            function getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min)) + min;
+            }
+        }
+    });
 });
 
-app.controller('AppCtrl', ['$scope', '$rootScope', function($s, $rs){
+app.controller('AppCtrl', ['$scope', '$rootScope', 'CONSTANTS', function($s, $rs, CONSTANTS) {
   console.log('woo hoo', $s);
+    $s.CONSTANTS = CONSTANTS;
   $rs.userInfo = {
-    authenticated: false
+    authenticated: true
   };
 
   $rs.$on('login-success', function (e, data) {
@@ -163,15 +259,49 @@ app.controller('AppCtrl', ['$scope', '$rootScope', function($s, $rs){
     },
     {
       name: "Purchase",
-      page: "/purchase"
+      page: "/purchase",
+        "forms": [
+            {
+                "name": "Purchase Goods",
+                "page": "/purchase-goods"
+            },
+            {
+                "name": "Purchase Assets",
+                "page": "/purchase-assets"
+            },
+            {
+                "name": "Purchase Expenses",
+                "page": "/purchase-expenses"
+            }
+        ]
     },
     {
       name: "Collection",
-      page: "/collection"
+      page: "/collection",
+        "forms": [
+            {
+                "name": "Collection Before",
+                "page": "/collection-before"
+            },
+            {
+                "name": "Collection After",
+                "page": "/collection-after"
+            }
+        ]
     },
     {
       name: "Payment",
-      page: "/payment"
+      page: "/payment",
+        "forms": [
+            {
+                "name": "Payment Before",
+                "page": "/payment-before"
+            },
+            {
+                "name": "Payment After",
+                "page": "/payment-after"
+            }
+        ]
     },
     {
       name: "Production",
@@ -183,7 +313,21 @@ app.controller('AppCtrl', ['$scope', '$rootScope', function($s, $rs){
     },
     {
       name: "Employees",
-      page: "/employees"
+      page: "/employees",
+        "forms": [
+            {
+                "name": "Employee Hiring",
+                "page": "/employee-hiring"
+            },
+            {
+                "name": "Employee Change Salary",
+                "page": "/employee-change-salary"
+            },
+            {
+                "name": "Employee Firing",
+                "page": "/employee-firing"
+            }
+        ]
     },
     {
       name: "Journals",
@@ -345,154 +489,6 @@ app.controller('SalesCtrl', ['$scope', function($s){
 
     vm.onSubmit = onSubmit;
 }]);
-app.controller('PurchaseCtrl', ['$scope', function($s){
-  console.log('PurchaseCtrl', $s);
-    $s.vm = {};
-    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
-    vm.formData = {};
-
-    function onSubmit() {
-        console.log('form submitted:', vm.sales);
-    }
-
-    vm.formFields = [
-        {
-            // the key to be used in the model values
-            // so this will be bound to vm.user.username
-            key: 'purchasenumber',
-            type: 'input',
-            templateOptions: {
-                placeholder: 'Purchase Number',
-                required: true
-            }
-        },
-        {
-            key: 'receiveddate',
-            type: 'datepicker',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Received Date',
-                datepickerPopup: 'dd-MM-yyyy',
-                required: true
-            }
-        },
-        {
-            key: 'documentreference',
-            type: 'input',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Document Reference',
-                required: true
-            }
-        },
-        {
-            key: 'description',
-            type: 'input',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Description',
-                required: true
-            }
-        },
-        {
-            key: 'currency',
-            type: 'select',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Customer Name',
-                required: true
-            }
-        },
-        {
-            key: 'totalpurchase',
-            type: 'input',
-            templateOptions: {
-                type: 'number',
-                placeholder: 'Total Purchase',
-                required: true
-            }
-        },
-        {
-            type: 'break_header',
-            templateOptions: {
-                text: 'Expense'
-            }
-        },
-        {
-            key: 'expensetype',
-            type: 'select',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Expense Type',
-                required: true
-            }
-        },
-        {
-            key: 'anount',
-            type: 'input',
-            templateOptions: {
-                type: 'number',
-                placeholder: 'Amount',
-                required: true
-            }
-        },
-        {
-            key: 'depositused',
-            type: 'input',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Deposit Used',
-                required: true
-            }
-        },
-        {
-            key: 'moneycollected',
-            type: 'input',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Money Collected',
-                required: true
-            }
-        },
-        {
-            key: 'moneynotcollected',
-            type: 'input',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Money Not Collected',
-                required: true
-            }
-        }
-    ];
-
-    vm.onSubmit = onSubmit;
-}]);
-app.controller('StockTakeCtrl', ['$scope', function($s){
-  console.log('PurchaseCtrl', $s);
-    $s.vm = {};
-    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
-    vm.formData = {};
-
-    function onSubmit() {
-        console.log('form submitted:', vm.sales);
-    }
-
-    vm.formFields = [
-
-        {
-            key: 'date',
-            type: 'datepicker',
-            templateOptions: {
-                type: 'text',
-                placeholder: 'Date',
-                datepickerPopup: 'dd-MM-yyyy',
-                required: true
-            }
-        }
-    ];
-
-    vm.onSubmit = onSubmit;
-}]);
 app.controller('ServicesCtrl', ['$scope', function($s){
   console.log('ServicesCtrl', $s);
     $s.vm = {};
@@ -640,7 +636,1405 @@ app.controller('ServicesCtrl', ['$scope', function($s){
     vm.onSubmit = onSubmit;
 }]);
 
+app.controller('CollectionBeforeCtrl', ['$scope', function($s){
+    console.log('CollectionBeforeCtrl', $s);
+    $s.pageTitle ='Collection Before';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {};
 
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'collectionnumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Collection Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'collectiondate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Collection Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'customername',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Customer Name',
+                options: [],
+                required: true
+            }
+        },
+        {
+            key: 'moneycollected',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Collected',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('CollectionAfterCtrl', ['$scope', function($s){
+    console.log('CollectionAfterCtrl', $s);
+    $s.pageTitle ='Collection After';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'collectionnumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Collection Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'collectiondate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Collection Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'customername',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Customer Name',
+                options: [],
+                required: true
+            }
+        },
+        {
+            key: 'moneycollected',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Collected',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('PurchaseGoodsCtrl', ['$scope', function ($s) {
+    $s.pageTitle = 'Purchase Goods';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {
+        inventories: [
+            {
+                'inventorypurchased': '',
+                'quantity': '',
+                'inventorycost': ''
+            }
+        ]
+    };
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'purchasenumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Purchase Number',
+                required: true
+            }
+        },
+        {
+            key: 'goodreceiveddate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Goods Received Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Document Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'currency',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Currency',
+                required: true
+            }
+        },
+        {
+            key: 'totalpurchase',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Total Purchase',
+                required: true
+            }
+        },
+        {
+            type: 'repeatSection',
+            key: 'inventories',
+            templateOptions: {
+                btnText: 'Add another inventory',
+                fields: [
+                    {
+                        key: 'inventorypurchased',
+                        type: 'select',
+                        templateOptions: {
+                            placeholder: 'Inventory Purchased',
+                            options: [
+                                {
+                                    name: 'Inventory Purchased',
+                                    value:''
+                                }
+                            ],
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'quantity',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Quantity',
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'inventorycost',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Cost of Inventory Purchased',
+                            required: true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            key: 'suppliername',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Supplier Name',
+                required: true
+            }
+        },
+        {
+            key: 'previouslypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Previously Paid',
+                required: false
+            }
+        },
+        {
+            key: 'prepaymentused',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Prepayment Used',
+                required: true
+            }
+        },
+        {
+            key: 'moneypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Paid',
+                required: true
+            }
+        },
+        {
+            key: 'moneynotpaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Not Paid',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('PurchaseAssetsCtrl', ['$scope', function ($s) {
+    $s.pageTitle = 'Purchase Assets';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {
+        assets: [
+            {
+                'assetpurchased': ''
+            }
+        ]
+    };
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'purchasenumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Purchase Number',
+                required: true
+            }
+        },
+        {
+            key: 'goodreceiveddate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Goods Received Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Document Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'currency',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Currency',
+                required: true
+            }
+        },
+        {
+            key: 'totalpurchase',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Total Purchase',
+                required: true
+            }
+        },
+        {
+            type: 'repeatSection',
+            key: 'assets',
+            templateOptions: {
+                btnText: 'Add another Asset',
+                fields: [
+                    {
+                        key: 'assetpurchased',
+                        type: 'select',
+                        templateOptions: {
+                            placeholder: 'Asset /home/vibhus/Personal/SiteWork/RuNu/app.js',
+                            options: [
+                                {
+                                    name: 'Asset Purchased',
+                                    value:''
+                                }
+                            ],
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'assetdescription',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'text',
+                            placeholder: 'Asset Description',
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'usefullife',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Useful Life',
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'startdateofuse',
+                        type: 'datepicker',
+                        templateOptions: {
+                            type: 'text',
+                            placeholder: 'Start Date of Use',
+                            datepickerPopup: 'dd-MM-yyyy',
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'quantity',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Quantity',
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'assetcost',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Cost of Asset Purchased',
+                            required: true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            key: 'suppliername',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Supplier Name',
+                required: true
+            }
+        },
+        {
+            key: 'previouslypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Previously Paid',
+                required: false
+            }
+        },
+        {
+            key: 'prepaymentused',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Prepayment Used',
+                required: true
+            }
+        },
+        {
+            key: 'moneypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Paid',
+                required: true
+            }
+        },
+        {
+            key: 'moneynotpaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Not Paid',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('PurchaseExpensesCtrl', ['$scope', function ($s) {
+    $s.pageTitle = 'Purchase Expenses';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {
+        expenses: [
+            {
+                'expensetype': ''
+            }
+        ]
+    };
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'purchasenumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Purchase Number',
+                required: true
+            }
+        },
+        {
+            key: 'receiveddate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Received Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Document Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'currency',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Currency',
+                required: true
+            }
+        },
+        {
+            key: 'totalpurchase',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Total Purchase',
+                required: true
+            }
+        },
+        {
+            type: 'repeatSection',
+            key: 'expenses',
+            templateOptions: {
+                btnText: 'Add another Asset',
+                fields: [
+                    {
+                        key: 'expensetype',
+                        type: 'select',
+                        templateOptions: {
+                            options: [
+                                {
+                                    name: 'Expense Type',
+                                    value:''
+                                }
+                            ],
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'amount',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Cost of Expense',
+                            required: true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            key: 'suppliername',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Supplier Name',
+                required: true
+            }
+        },
+        {
+            key: 'previouslypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Previously Paid',
+                required: false
+            }
+        },
+        {
+            key: 'prepaymentused',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Prepayment Used',
+                required: true
+            }
+        },
+        {
+            key: 'moneypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Paid',
+                required: true
+            }
+        },
+        {
+            key: 'moneynotpaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Not Paid',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('ProductionCtrl', ['$scope', function ($s) {
+    $s.pageTitle = 'Production';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {
+        inventories: [
+            {
+                'inventoryused': ''
+            }
+        ],
+        inventoryproduced: ''
+    };
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'productionnumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Production Number',
+                required: true
+            }
+        },
+        {
+            key: 'productiondate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Production Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Document Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            type: 'repeatSection',
+            key: 'inventories',
+            templateOptions: {
+                btnText: 'Add another Inventory',
+                fields: [
+                    {
+                        key: 'inventoryused',
+                        type: 'select',
+                        templateOptions: {
+                            options: [
+                                {
+                                    name: 'Inventory Used',
+                                    value:''
+                                }
+                            ],
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'units',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Units used',
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'quantity',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Quantity of inventory used',
+                            required: true
+                        }
+                    },
+                    {
+                        key: 'cost',
+                        type: 'input',
+                        templateOptions: {
+                            type: 'number',
+                            placeholder: 'Cost of Inventory Used',
+                            required: true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            key: 'inventoryproduced',
+            type: 'select',
+            templateOptions: {
+                options: [
+                    {
+                        name: 'Inventory Produced',
+                        value:''
+                    }
+                ],
+                required: true
+            }
+        },
+        {
+            key: 'units',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Units of inventory produced',
+                required: true
+            }
+        },
+        {
+            key: 'quantity',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Quantity Produced',
+                required: true
+            }
+        },
+        {
+            key: 'cost',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Cost of Inventory Produced',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('PaymentBeforeCtrl', ['$scope', function($s){
+    console.log('PaymentBeforeCtrl', $s);
+    $s.pageTitle ='Payment Before';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'paymentnumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Payment Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'paymentdate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Payment Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'suppliername',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Supplier Name',
+                options: [],
+                required: true
+            }
+        },
+        {
+            key: 'moneypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Paid',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('PaymentAfterCtrl', ['$scope', function($s){
+    console.log('PaymentAfterCtrl', $s);
+    $s.pageTitle ='Payment After';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.model = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'paymentnumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Payment Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'paymentdate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Payment Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'suppliername',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Supplier Name',
+                options: [],
+                required: true
+            }
+        },
+        {
+            key: 'moneypaid',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Money Paid',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('StockTakeCtrl', ['$scope', function($s){
+    console.log('PurchaseCtrl', $s);
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.formData = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.sales);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'stoketakenumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Stoke Take Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'stoketakedate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Stoke Take Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'stoketakename',
+            type: 'select',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Stoke Take Name',
+                options: [],
+                required: true
+            }
+        },
+        {
+            key: 'inventoryunits',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Units of Inventory',
+                required: true
+            }
+        },
+        {
+            key: 'currentquantity',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Current Quantity',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('EmployeeHiringCtrl', ['$scope', function($s){
+    $s.pageTitle = 'Employee Hiring';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.formData = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.sales);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'employeenumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Employee Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'employeehiredate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Employee Hire Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'employeename',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Employee Name',
+                required: true
+            }
+        },
+        {
+            key: 'annualsalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Annual Salary',
+                required: true
+            }
+        },
+        {
+            key: 'monthlysalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Monthly Salary',
+                required: true
+            }
+        },
+        {
+            key: 'dailysalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Daily Salary',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('EmployeeChangeSalaryCtrl', ['$scope', function($s){
+    $s.pageTitle = 'Employee Hiring';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.formData = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.sales);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'employeenumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Employee Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'salarychangedate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Salary Change Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'employeename',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Employee Name',
+                required: true
+            }
+        },
+        {
+            key: 'annualsalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Annual Salary',
+                required: true
+            }
+        },
+        {
+            key: 'monthlysalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Monthly Salary',
+                required: true
+            }
+        },
+        {
+            key: 'dailysalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Daily Salary',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('EmployeeFiringCtrl', ['$scope', function($s){
+    $s.pageTitle = 'Employee Firing';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.formData = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.sales);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'employeenumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Employee Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'employeefiredate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Employee Fire Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'employeename',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Employee Name',
+                required: true
+            }
+        },
+        {
+            key: 'annualsalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Annual Salary',
+                required: true
+            }
+        },
+        {
+            key: 'monthlysalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Monthly Salary',
+                required: true
+            }
+        },
+        {
+            key: 'dailysalary',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Daily Salary',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
+
+app.controller('JournalCtrl', ['$scope', function($s){
+    $s.pageTitle = 'Journal';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.formData = {};
+
+    function onSubmit() {
+        console.log('form submitted:', vm.sales);
+    }
+
+    vm.fields = [
+        {
+            // the key to be used in the model values
+            // so this will be bound to vm.user.username
+            key: 'journalnumber',
+            type: 'input',
+            templateOptions: {
+                placeholder: 'Journal Number',
+                disabled: true
+            }
+        },
+        {
+            key: 'journaldate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Journal Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'reference',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Reference',
+                required: true
+            }
+        },
+        {
+            key: 'description',
+            type: 'input',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Description',
+                required: true
+            }
+        },
+        {
+            key: 'debitaccount',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Debit Account',
+                required: true
+            }
+        },
+        {
+            key: 'debitamount',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Debit Amount',
+                required: true
+            }
+        },
+        {
+            key: 'creditaccount',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Credit Account',
+                required: true
+            }
+        },
+        {
+            key: 'creditamount',
+            type: 'input',
+            templateOptions: {
+                type: 'number',
+                placeholder: 'Credit Amount',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+}]);
 
 /* global angular */
 /*

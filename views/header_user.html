@@ -18,8 +18,13 @@
                     <a href="#" class="dropdown-toggle" uib-dropdown-toggle="" data-toggle="dropdown">Record&nbsp;<i class="glyphicon glyphicon-plus-sign"></i>
                     </a>
                     <ul class="dropdown-menu" role="menu">
-                      <li ng-repeat="form in recordForms">
+                      <li ng-repeat="form in recordForms" ng-class="{'dropdown-submenu': form.forms}">
                         <a href="#{{form.page}}">{{form.name}}</a>
+                        <ul class="dropdown-menu" ng-if="form.forms.length">
+                            <li ng-repeat="subform in form.forms">
+                                <a href="#{{subform.page}}">{{subform.name}}</a>
+                            </li>
+                        </ul>
                       </li>
                     </ul>
                   </li>
