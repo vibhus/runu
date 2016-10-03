@@ -380,15 +380,16 @@ app.controller('SettingsCtrl', ['$scope', function($s){
 
 app.controller('SalesCtrl', ['$scope', function($s){
   console.log('SalesCtrl', $s);
+    $s.pageTitle ='Sales';
     $s.vm = {};
     var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
-    vm.sales = {};
+    vm.model = {};
 
     function onSubmit() {
-        console.log('form submitted:', vm.sales);
+        console.log('form submitted:', vm.model);
     }
 
-    vm.salesFields = [
+    vm.fields = [
         {
             // the key to be used in the model values
             // so this will be bound to vm.user.username
@@ -863,6 +864,7 @@ app.controller('PurchaseGoodsCtrl', ['$scope', function ($s) {
             type: 'repeatSection',
             key: 'inventories',
             templateOptions: {
+                title: 'Inventories',
                 btnText: 'Add another inventory',
                 fields: [
                     {
@@ -1028,6 +1030,7 @@ app.controller('PurchaseAssetsCtrl', ['$scope', function ($s) {
             key: 'assets',
             templateOptions: {
                 btnText: 'Add another Asset',
+                title: 'Assets',
                 fields: [
                     {
                         key: 'assetpurchased',
@@ -1219,7 +1222,8 @@ app.controller('PurchaseExpensesCtrl', ['$scope', function ($s) {
             type: 'repeatSection',
             key: 'expenses',
             templateOptions: {
-                btnText: 'Add another Asset',
+                title: 'Expenses',
+                btnText: 'Add another Expense',
                 fields: [
                     {
                         key: 'expensetype',
@@ -1356,6 +1360,7 @@ app.controller('ProductionCtrl', ['$scope', function ($s) {
             type: 'repeatSection',
             key: 'inventories',
             templateOptions: {
+                title: 'Inventories',
                 btnText: 'Add another Inventory',
                 fields: [
                     {
@@ -1767,7 +1772,7 @@ app.controller('EmployeeHiringCtrl', ['$scope', function($s){
 }]);
 
 app.controller('EmployeeChangeSalaryCtrl', ['$scope', function($s){
-    $s.pageTitle = 'Employee Hiring';
+    $s.pageTitle = 'Employee Salary Change';
     $s.vm = {};
     var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
     vm.formData = {};

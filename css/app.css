@@ -8,7 +8,7 @@ html body {
 html body div.container-fluid.body-content {
   position: absolute;
   top: 50px;
-  bottom: 30px;
+  bottom: 50px;
   right: 0;
   left: 0;
   overflow-y: auto;
@@ -73,4 +73,27 @@ footer.app-footer {
     -webkit-border-radius: 6px 0 6px 6px;
     -moz-border-radius: 6px 0 6px 6px;
     border-radius: 6px 0 6px 6px;
+}
+
+.repeatsection .btn-circle {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    padding: 6px 0;
+    font-size: 12px;
+    line-height: 1.428571429;
+    border-radius: 15px;
+    position:absolute;
+    top:-17px;
+    right:-12px;
+    padding:5px 3px;
+}
+
+.glyphicon {
+    top: 0;
+}
+
+button.date-picker {
+    padding-top: 9px;
+    padding-bottom: 9px;
 }
