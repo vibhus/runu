@@ -19,7 +19,7 @@
                     </a>
                     <ul class="dropdown-menu" role="menu">
                       <li ng-repeat="form in recordForms" ng-class="{'dropdown-submenu': form.forms}">
-                        <a href="#{{form.page}}">{{form.name}}</a>
+                        <a href="{{form.forms.length ? '#' : '#' + form.page}}">{{form.name}}</a>
                         <ul class="dropdown-menu" ng-if="form.forms.length">
                             <li ng-repeat="subform in form.forms">
                                 <a href="#{{subform.page}}">{{subform.name}}</a>
@@ -28,6 +28,11 @@
                       </li>
                     </ul>
                   </li>
+                    <li>
+                        <a href="#/edit">
+                            Edit&nbsp;<i class="glyphicon glyphicon-pencil"></i>
+                        </a>
+                    </li>
                     <li>
                         <a href="#/reports">
                             Reports&nbsp;<i class="glyphicon glyphicon-list-alt"></i>

@@ -90,10 +90,9 @@ footer.app-footer {
 }
 
 .glyphicon {
-    top: 0;
+    top: 2px;
 }
 
-button.date-picker {
-    padding-top: 9px;
-    padding-bottom: 9px;
+.grid {
+    height: 250px;
 }

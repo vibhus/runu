@@ -1,0 +1,45 @@
+<div>
+    <ng-include src="CONSTANTS.PATH.BASIC_FORM"/>
+</div>
+<hr>
+
+<div class="row text-center">
+    <button class="btn btn-lg btn-default" ng-click="amend()">Amend</button>
+    <button class="btn btn-lg btn-default">Reverse</button>
+</div>
+
+<div class="row text-center">
+    <h5>{{vm.model.formcategory}} Table</h5>
+    <h5>From {{vm.model.startdate}} to {{vm.model.enddate}}</h5>
+</div>
+
+<div class="row text-center">
+    <div class="col-md-8 col-md-offset-2">
+        <div id="grid1" ui-grid="gridOptions" ui-grid-selection class="grid"></div>
+    </div>
+</div>
+
+<!--MODAL-->
+<script type="text/ng-template" id="formModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Amend to {{transactionType}} Form {{transactionNumber}}</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <!-- Sales -->
+        <div ng-switch="formcategory">
+            <div ng-switch-when="sales"
+                 ng-controller="SalesCtrl">
+                <ng-include src="CONSTANTS.PATH.FORMS + formPathMap[formcategory]"></ng-include>
+            </div>
+            <!-- Journals -->
+            <div ng-switch-when="journals"
+                 ng-controller="JournalCtrl">
+                <ng-include src="CONSTANTS.PATH.FORMS + formPathMap[formcategory]"></ng-include>
+            </div>
+        </div>
+    </div>
+    <!--<div class="modal-footer">-->
+        <!--<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>-->
+        <!--<button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>-->
+    <!--</div>-->
+</script>

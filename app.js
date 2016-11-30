@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ngRoute', 'ngAnimate', 'ngSanitize', 'ui.bootstrap', 'formly', 'formlyBootstrap']);
+var app = angular.module('app', ['ngRoute', 'ngAnimate', 'ngSanitize', 'ui.bootstrap', 'formly', 'formlyBootstrap', 'ui.grid', 'ui.grid.selection']);
 
 app.config(['$routeProvider',
   function($routeProvider) {
@@ -22,6 +22,10 @@ app.config(['$routeProvider',
       when('/services', {
         templateUrl: 'views/services.html',
         controller: 'ServicesCtrl'
+      }).
+      when('/edit', {
+        templateUrl: 'views/edit/edit.html',
+        controller: 'EditCtrl'
       }).
       when('/reports', {
         templateUrl: 'views/reports/reports.html',
@@ -91,7 +95,8 @@ app.config(['$routeProvider',
 app.constant('CONSTANTS', {
   AUTH_HOME_PAGE: '/settings',
     PATH: {
-        BASIC_FORM: "views/forms/form.html"
+        BASIC_FORM: "views/forms/form.html",
+        FORMS: "views/forms/"
     }
 });
 
@@ -384,6 +389,10 @@ app.controller('SalesCtrl', ['$scope', function($s){
     $s.vm = {};
     var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
     vm.model = {};
+    var modelInitializer = $s.$on('init-model', function (e,model) {
+        console.log('initializing in sales', model);
+        vm.model = model;
+    });
 
     function onSubmit() {
         console.log('form submitted:', vm.model);
@@ -489,6 +498,8 @@ app.controller('SalesCtrl', ['$scope', function($s){
     ];
 
     vm.onSubmit = onSubmit;
+
+    $s.$on('$destroy', modelInitializer);
 }]);
 app.controller('ServicesCtrl', ['$scope', function($s){
   console.log('ServicesCtrl', $s);
@@ -1527,7 +1538,7 @@ app.controller('PaymentBeforeCtrl', ['$scope', function($s){
 
 app.controller('PaymentAfterCtrl', ['$scope', function($s){
     console.log('PaymentAfterCtrl', $s);
-    $s.pageTitle ='Payment After';
+    $s.pageTitle = 'Payment After';
     $s.vm = {};
     var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
     vm.model = {};
@@ -2039,6 +2050,116 @@ app.controller('JournalCtrl', ['$scope', function($s){
     ];
 
     vm.onSubmit = onSubmit;
+}]);
+
+app.controller('EditCtrl', ['$scope', '$uibModal', function($s, $uibModal){
+    $s.pageTitle = 'Edit';
+    $s.vm = {};
+    var vm = $s.vm; // vm stands for "View Model" --> see https://github.com/johnpapa/angular-styleguide#controlleras-with-vm
+    vm.formCategories = [
+        {"name": "Sales", "value": "sales", "path": "sales.html"},
+        {"name": "Journals", "value": "journals", "path": "journal.html"}
+    ];
+    vm.formPathMap = {};
+    vm.formCategories.forEach(function(form) {
+        vm.formPathMap[form.value] = form.path;
+    });
+
+    function onSubmit() {
+        console.log('form submitted:', vm.model);
+    }
+
+    vm.fields = [
+        {
+            key: 'formcategory',
+            type: 'select',
+            templateOptions: {
+                options: vm.formCategories,
+                required: true
+            }
+        },
+        {
+            key: 'startdate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Starting Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        },
+        {
+            key: 'enddate',
+            type: 'datepicker',
+            templateOptions: {
+                type: 'text',
+                placeholder: 'Ending Date',
+                datepickerPopup: 'dd-MM-yyyy',
+                required: true
+            }
+        }
+    ];
+
+    vm.onSubmit = onSubmit;
+
+    $s.gridData = [
+        {
+            "firstname": "Steve",
+            "lastname": "Rogers"
+        },
+        {
+            "firstname": "Peter",
+            "lastname": "Parker"
+        }
+    ];
+
+    $s.gridOptions = {
+        data: $s.gridData,
+        enableRowSelection: true,
+        enableRowHeaderSelection: false,
+        multiSelect: false
+    };
+
+    $s.gridOptions.modifierKeysToMultiSelect = false;
+    $s.gridOptions.noUnselect = true;
+    $s.gridOptions.onRegisterApi = function( gridApi ) {
+        $s.gridApi = gridApi;
+    };
+
+    $s.amend = function () {
+        console.log($s.gridApi.selection.getSelectedRows());
+        var transactionType = $s.vm.model.formcategory,
+            transactionData = $s.gridApi.selection.getSelectedRows()[0];
+        $uibModal.open({
+            ariaLabelledBy: 'modal-title',
+            ariaDescribedBy: 'modal-body',
+            templateUrl: 'formModal.html',
+            controller: 'FormModalCtrl',
+            resolve: {
+                data: function () {
+                    return {
+                        formcategory: transactionType,
+                        data: transactionData,
+                        formPathMap: vm.formPathMap
+                    };
+                }
+            }
+        });
+    };
+
+}]);
+
+app.controller('FormModalCtrl', ['$scope', 'CONSTANTS', 'data', '$timeout', function($s, CONSTANTS, data, $timeout){
+    console.log('dialog open', data);
+    $s.CONSTANTS = CONSTANTS;
+    $s.formcategory = data.formcategory;
+    $s.vm = {
+            'model': data.data
+        };
+    $s.formPathMap = data.formPathMap;
+    $timeout(function () {
+        $s.$broadcast("init-model", $s.vm.model);
+    });
 }]);
 
 /* global angular */
